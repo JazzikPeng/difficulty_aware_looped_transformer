@@ -40,12 +40,16 @@ In this task we define a p-hop induction task with three difficulty levels:
 | 3     | 64 | 16         | 1024    | 12            |
 
 
+First randomly sample and generate the dataset in txt format for all three difficulty levels. 
+Each contains train/test and eval data. Eval data contains 100 p-hop steps.
+
+For each level, I will create 4M training samples. I then train a looped transformer on those data using different number of loops.
+I will make sure the model BLOCK_SIZE is greater than 1024 for each level to handle any seqeunce up to 1024 sequence length. 
+I will then evaluate the model on the eval data with different number of loops for each level of difficulty.
+
 # Experiment and Training
 
 # TODO
-- [ ] Add a way to generate the dataset.
-- [ ] Add a way to train the model.
-- [ ] Add a way to evaluate the model.
 
 
 
