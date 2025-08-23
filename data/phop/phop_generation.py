@@ -10,6 +10,7 @@ from typing import List, Tuple, Optional
 # For multi-threading
 import concurrent.futures
 import os
+from phop.constant import *
 
 TOKEN_MAP = {
     "p": 0,  # p value
@@ -17,7 +18,7 @@ TOKEN_MAP = {
     "e": 2,  # End of sequence
     "hop": 3,  # Start of hop outputs
 }
-NUM_SAMPLES = 4001000
+NUM_SAMPLES = 40100
 NUM_TEST_SAMPLES = 2000
 
 RESERVED_TOKENS_SIZE = len(TOKEN_MAP)
@@ -191,7 +192,53 @@ def generate_full_k_hop_sequences(p=16, seq_len=256, vocab_size=4):
     num_sequences = generate_k_hop_sequences(seq_len, vocab_size, p, num_samples, file_path)
     print(f"Generated {num_sequences} k-hop sequences and saved to {file_path}")
 
+def phop_collate_batch(batch):
+    """
+    Collate function that implements p-hop training data generation logic
+    
+    Args:
+        batch: List of tensors from the dataset
+        p: Number of tokens for the p-hop task (default: 16)
+    
+    Returns:
+        Tensor of shape (batch_size, 2, BLOCK_SIZE) where:
+        - [:, 0, :] is the input sequence (x)
+        - [:, 1, :] is the target sequence (y)
+    """
+    # First pad sequences to same length
+    data = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0,  padding_side='left')
+    
+    batch_size = data.shape[0]
+    
+    # Calculate sequence lengths
+    x_lengths = BLOCK_SIZE
+    y_lengths = BLOCK_SIZE
+    
+    # Create output tensors
+    x_padded = torch.zeros((batch_size, x_lengths), dtype=data.dtype)
+    y_padded = torch.zeros((batch_size, y_lengths), dtype=data.dtype)
+    
+    # Fill y with mask token to mask out losses in Y
+    y_padded[:, :] = SPECIAL_MASK_TOKEN
+    x_padded[:, :] = SPECIAL_MASK_TOKEN
+    
+    # Fill x with all tokens except the last one
+    seq_len = min(data.shape[1] - 1, x_lengths)
+    x_padded[:, -seq_len:] = data[:, :seq_len]
+    
+    # Fill the last p+1 positions of y with the corresponding tokens from data
+    y_padded[:, -data.shape[1]:] = data[:, :]
+    y_start_idx = torch.where(y_padded==3)[1]
+    # Mask all before y_start_idx with -1
+    cols = torch.arange(BLOCK_SIZE).unsqueeze(0).expand(batch_size, -1)
+    mask = cols < y_start_idx.unsqueeze(1)
+    # mask[i, j] == True if j < y_start_idx[i], else False
+    y_padded[mask] = -1  # Assuming -1 is the ignore index for loss computation
 
+    # Stack to create final array of shape (batch_size, 2, BLOCK_SIZE)
+    sequences = torch.stack([x_padded, y_padded], dim=1)
+    
+    return sequences
 
 if __name__ == "__main__":
     # # Run the unit test
@@ -210,7 +257,7 @@ if __name__ == "__main__":
     # generate_mini_k_hop_sequences()
     # generate_full_k_hop_sequences()
     if False:
-        from difficulty_to_l import difficulty_to_l
+        from constant import difficulty_to_l
         import time
         for (p, vocab_size, seq_len), num_loops in difficulty_to_l.items():
             start_time = time.time()
