@@ -54,9 +54,9 @@ wandb_run_name = 'phop-16-4M-looped_2_0_6_random' # <base_block_size>_<loop_star
 # data
 dataset = 'phop'
 train_file_paths = [
-    "data/phop/p_hop_sequences_16_256_4.txt",
-    "data/phop/p_hop_sequences_32_512_8.txt",
-    "data/phop/p_hop_sequences_64_1024_16.txt",
+    "data/phop/p_hop_sequences_16_256_4_4m.txt",
+    "data/phop/p_hop_sequences_32_512_8_4m.txt",
+    "data/phop/p_hop_sequences_64_1024_16_4m.txt",
 ]
 test_file_paths = [
     "data/phop/p_hop_sequences_100_256_4_test.txt",

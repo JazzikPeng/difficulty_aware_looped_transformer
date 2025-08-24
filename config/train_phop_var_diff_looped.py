@@ -7,6 +7,18 @@ eval_interval = 1000 # keep frequent because we'll overfit
 eval_iters = 200
 log_interval = 100 # don't print too too often
 
+# data
+train_file_paths = [
+    "data/phop/p_hop_sequences_16_256_4_4m.txt",
+    "data/phop/p_hop_sequences_32_512_8_4m.txt",
+    "data/phop/p_hop_sequences_64_1024_16_4m.txt",
+]
+test_file_paths = [
+    "data/phop/p_hop_sequences_100_256_4_test.txt",
+    "data/phop/p_hop_sequences_100_512_8_test.txt",
+    "data/phop/p_hop_sequences_100_1024_16_test.txt",
+]
+
 # system
 device = 'cuda'
 compile = True # do not torch compile the model
