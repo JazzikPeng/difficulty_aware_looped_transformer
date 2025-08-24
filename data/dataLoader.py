@@ -1,8 +1,8 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 import os
-from phop.phop_generation import phop_collate_batch 
-from phop.constant import *
+from .phop.phop_generation import phop_collate_batch 
+from .phop.constant import *
 
 # Constants for p-hop training data generation
 
@@ -50,18 +50,19 @@ class LargeTextDataset(Dataset):
         return sample
 
 
-# Usage
-file_paths = [
-    "data/phop/p_hop_sequences_16_256_4.txt",
-    "data/phop/p_hop_sequences_32_512_8.txt",
-    "data/phop/p_hop_sequences_64_1024_16.txt",
-]
+if __name__ == "__main__":
+    # Usage example
+    file_paths = [
+        "data/phop/p_hop_sequences_16_256_4.txt",
+        "data/phop/p_hop_sequences_32_512_8.txt",
+        "data/phop/p_hop_sequences_64_1024_16.txt",
+    ]
 
-dataset = LargeTextDataset(file_paths)
-loader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=0, collate_fn=phop_collate_batch)
+    dataset = LargeTextDataset(file_paths)
+    loader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=0, collate_fn=phop_collate_batch)
 
-for batch in loader:
-    print(f"Batch shape: {batch.shape}")  # (batch_size, 2, BLOCK_SIZE)
-    print(f"X shape: {batch[:, 0, :].shape}")  # Input sequences
-    print(f"Y shape: {batch[:, 1, :].shape}")  # Target sequences
-    break
+    for batch in loader:
+        print(f"Batch shape: {batch.shape}")  # (batch_size, 2, BLOCK_SIZE)
+        print(f"X shape: {batch[:, 0, :].shape}")  # Input sequences
+        print(f"Y shape: {batch[:, 1, :].shape}")  # Target sequences
+        break

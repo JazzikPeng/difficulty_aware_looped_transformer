@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
+            "name": "nanoGPT Train",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/train.py",
+            // "args": ["config/train_phop_16.py"],
+            "args": ["config/train_phop_var_diff_looped.py"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
+            "name": "nanoGPT Sample",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/eval_phop.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        }
+    ]
+}

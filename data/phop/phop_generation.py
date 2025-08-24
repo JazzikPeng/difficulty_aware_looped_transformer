@@ -10,7 +10,7 @@ from typing import List, Tuple, Optional
 # For multi-threading
 import concurrent.futures
 import os
-from phop.constant import *
+from .constant import *
 
 TOKEN_MAP = {
     "p": 0,  # p value
@@ -205,8 +205,15 @@ def phop_collate_batch(batch):
         - [:, 0, :] is the input sequence (x)
         - [:, 1, :] is the target sequence (y)
     """
-    # First pad sequences to same length
-    data = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0,  padding_side='left')
+    # First pad sequences to same length (left pad)
+    lengths = [t.numel() for t in batch]
+    max_len = max(lengths) if lengths else 0
+    data = torch.zeros((len(batch), max_len), dtype=batch[0].dtype if batch else torch.long)
+    for i, t in enumerate(batch):
+        l = t.numel()
+        if l == 0:
+            continue
+        data[i, -l:] = t[-l:]
     
     batch_size = data.shape[0]
     
@@ -220,7 +227,6 @@ def phop_collate_batch(batch):
     
     # Fill y with mask token to mask out losses in Y
     y_padded[:, :] = SPECIAL_MASK_TOKEN
-    x_padded[:, :] = SPECIAL_MASK_TOKEN
     
     # Fill x with all tokens except the last one
     seq_len = min(data.shape[1] - 1, x_lengths)
