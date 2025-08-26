@@ -47,9 +47,14 @@ For each level, I will create 4M training samples. I then train a looped transfo
 I will make sure the model BLOCK_SIZE is greater than 1024 for each level to handle any seqeunce up to 1024 sequence length. 
 I will then evaluate the model on the eval data with different number of loops for each level of difficulty.
 
+
+## Curiculum Learning Setup
+Without curriculum learning, the mixed p-hop sequences of various difficulty levels. The number of training loop are randomized.
+The validation loss is not good.
+![curiculum_learning_setup](./assets/mixed_phop_seq_learning.png)
+
+With curriculum learning, the model learn on simplier phop sequence first using less number of loops. In on batch, the problem will be drawn from the same level of difficulty. Level of difficulty is pre-defined by human. 
 # Experiment and Training
-
-
 
 # TODO
 
