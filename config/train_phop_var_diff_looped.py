@@ -21,11 +21,11 @@ test_file_paths = [
 
 # system
 device = 'cuda'
-compile = True # do not torch compile the model
+compile = False # do not torch compile the model
 # we expect to overfit on this small dataset, so only save when val improves
 always_save_checkpoint = False
 
-wandb_log = True # override via command line if you like
+wandb_log = False # override via command line if you like
 wandb_project = 'phop-mix'
 wandb_run_name = 'phop-mix-looped_2_0_6_random' # <base_block_size>_<loop_start>_<num_loops>.pt
 
@@ -59,3 +59,51 @@ decay_lr = True # whether to decay the learning rate
 warmup_iters = 2000 # how many steps to warm up for
 lr_decay_iters = max_iters # should be ~= max_iters per Chinchilla
 min_lr = 6e-5 # minimum learning rate, should be ~= learning_rate/10 per Chinchilla
+
+# define dataloader here
+import os
+import time
+import math
+import pickle
+from contextlib import nullcontext
+
+import numpy as np
+import torch
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.distributed import init_process_group, destroy_process_group
+
+from model import GPTConfig, GPT, GPTLooped
+from torch.utils.data import Dataset, DataLoader
+# Add project root to path
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent.parent  # Adjust as needed
+sys.path.append(str(project_root))
+from data.dataLoader import LargeTextDataset
+from data.phop.phop_generation import phop_collate_batch
+
+# Create a dataset and a dataloader for phop mixed difficulty learning
+train_dataset = LargeTextDataset(train_file_paths)
+test_dataset   = LargeTextDataset(test_file_paths)
+train_loader = DataLoader(
+    train_dataset,
+    batch_size=batch_size,
+    shuffle=True,
+    num_workers=1,
+    collate_fn=phop_collate_batch,
+    pin_memory=True,
+    persistent_workers=True,
+    prefetch_factor=4,
+    drop_last=True,
+)
+test_loader   = DataLoader(
+    test_dataset,
+    batch_size=batch_size,
+    shuffle=True,
+    num_workers=1,
+    collate_fn=phop_collate_batch,
+    pin_memory=True,
+    persistent_workers=True,
+    prefetch_factor=4,
+    drop_last=True,
+)

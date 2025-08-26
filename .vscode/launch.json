@@ -29,6 +29,14 @@
             "program": "${workspaceFolder}/eval_phop.py",
             "console": "integratedTerminal",
             "justMyCode": true,
+        },
+        {
+            "name": "Run data/dataLoader.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/data/dataLoader.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

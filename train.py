@@ -63,6 +63,7 @@ test_file_paths = [
     "data/phop/p_hop_sequences_100_512_8_test.txt",
     "data/phop/p_hop_sequences_100_1024_16_test.txt",
 ]
+
 gradient_accumulation_steps = 5 * 8 # used to simulate larger batch sizes
 batch_size = 12 # if gradient_accumulation_steps > 1, this is the micro-batch size
 block_size = 1024
@@ -94,37 +95,17 @@ backend = 'nccl' # 'nccl', 'gloo', etc.
 device = 'cuda' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32', 'bfloat16', or 'float16', the latter will auto implement a GradScaler
 compile = False # use PyTorch 2.0 to compile the model to be faster
+
+# Create a dataset and a dataloader, None for placeholder
+train_dataset = None
+test_dataset   = None
+train_loader = None
+test_loader = None
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
 exec(open('configurator.py').read()) # overrides from command line or config file
 config = {k: globals()[k] for k in config_keys} # will be useful for logging
 # -----------------------------------------------------------------------------
-
-# Create a dataset and a dataloader
-train_dataset = LargeTextDataset(train_file_paths)
-test_dataset   = LargeTextDataset(test_file_paths)
-train_loader = DataLoader(
-    train_dataset,
-    batch_size=batch_size,
-    shuffle=True,
-    num_workers=1,
-    collate_fn=phop_collate_batch,
-    pin_memory=True,
-    persistent_workers=True,
-    prefetch_factor=4,
-    drop_last=True,
-)
-test_loader   = DataLoader(
-    test_dataset,
-    batch_size=batch_size,
-    shuffle=True,
-    num_workers=1,
-    collate_fn=phop_collate_batch,
-    pin_memory=True,
-    persistent_workers=True,
-    prefetch_factor=4,
-    drop_last=True,
-)
 
 # various inits, derived attributes, I/O setup
 ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
