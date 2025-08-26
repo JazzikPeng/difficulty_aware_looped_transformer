@@ -1,1 +1,83 @@
-./data/*.txt
+# -------------------------
+# Python cache / build files
+# -------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# -------------------------
+# Virtual environments
+# -------------------------
+.venv/
+venv/
+env/
+ENV/
+.conda/
+*.conda
+*.virtualenv
+
+# -------------------------
+# Jupyter Notebook checkpoints
+# -------------------------
+.ipynb_checkpoints/
+*.ipynb_save
+*.ipynb_convert
+
+# -------------------------
+# Logs and debug
+# -------------------------
+*.log
+*.out
+*.err
+*.tmp
+*.swp
+*.swo
+.DS_Store
+
+# -------------------------
+# Torch / ML training artifacts
+# -------------------------
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+models/
+runs/             # e.g. tensorboard logs
+lightning_logs/   # pytorch lightning logs
+wandb/            # weights & biases local runs
+
+# -------------------------
+# Datasets / outputs
+# -------------------------
+data/
+datasets/
+output/
+outputs/
+results/
+
+# -------------------------
+# IDE settings
+# -------------------------
+.vscode/
+.idea/
+*.code-workspace
+
+# -------------------------
+# OS-specific
+# -------------------------
+Thumbs.db
+ehthumbs.db
+Icon?
+
+# -------------------------
+# Data
+# -------------------------
+data/*.txt
