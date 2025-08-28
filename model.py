@@ -355,7 +355,7 @@ class GPTLooped(GPT):
         x = self.transformer.ln_f(x)
         return x
     
-    def forward(self, idx, targets=None, train=True):
+    def forward(self, idx, targets=None, train=True, p_to_num_loops={16: 4, 32: 8, 64: 16}):
         device = idx.device
         b, t = idx.size()
         assert t <= self.config.block_size, f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
@@ -378,8 +378,14 @@ class GPTLooped(GPT):
         logits_list = []
         
         # Randomized the number of loops from 2 to self.num_loops
-        num_loops_iter = random.randint(2, self.num_loops) if train else self.num_loops
-
+        # num_loops_iter = random.randint(2, self.num_loops) if train else self.num_loops
+        if train:
+            # Find p value within the batch
+            p = torch.where(targets[0]!=-1)[0].shape[0] - 2
+            num_loops_iter = p_to_num_loops[p]
+        else:
+            num_loops_iter = self.num_loops
+        
         # Loop through multiple iterations
         for loop_idx in range(num_loops_iter):
             if loop_idx < self.loop_start:

@@ -34,7 +34,7 @@ import sys
 from pathlib import Path
 project_root = Path(__file__).parent.parent.parent  # Adjust as needed
 sys.path.append(str(project_root))
-from data.dataLoader import LargeTextDataset
+from data.dataLoader import LargeTextDataset, FixedRatioBatchSampler
 from data.phop.phop_generation import phop_collate_batch
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
@@ -74,6 +74,7 @@ n_embd = 768
 dropout = 0.0 # for pretraining 0 is good, for finetuning try 0.1+
 bias = False # do we use bias inside LayerNorm and Linear layers?
 # loop config
+p_to_num_loops = None # Placeholder for curriculum learning
 num_loops = 6
 loop_start = 0
 loop_func = 'z=f(x+z)'
@@ -293,7 +294,9 @@ def estimate_loss():
             losses[k] = loss.item()
         out[split] = losses.mean()
     model.train()
-    return out
+    # Compute p values
+    p_value = torch.where(Y[0]!=-1)[0].shape[0] - 2
+    return out, p_value
 
 # learning rate decay scheduler (cosine with warmup)
 def get_lr(it):
@@ -329,7 +332,7 @@ while True:
 
     # evaluate the loss on train/val sets and write checkpoints
     if iter_num % eval_interval == 0 and master_process:
-        losses = estimate_loss()
+        losses, p_value = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
         if wandb_log:
             wandb.log({
@@ -338,6 +341,7 @@ while True:
                 "val/loss": losses['val'],
                 "lr": lr,
                 "mfu": running_mfu*100, # convert to percentage
+                "p_value": p_value, # record curriculum learning
             })
         if losses['val'] < best_val_loss or always_save_checkpoint:
             best_val_loss = losses['val']
