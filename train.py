@@ -111,6 +111,7 @@ config = {k: globals()[k] for k in config_keys} # will be useful for logging
 # various inits, derived attributes, I/O setup
 ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
 if ddp:
+    print("Running in DDP mode")
     init_process_group(backend=backend)
     ddp_rank = int(os.environ['RANK'])
     ddp_local_rank = int(os.environ['LOCAL_RANK'])
@@ -125,6 +126,7 @@ if ddp:
     gradient_accumulation_steps //= ddp_world_size
 else:
     # if not ddp, we are running on a single gpu, and one process
+    print("Running on a single GPU without DDP")
     master_process = True
     seed_offset = 0
     ddp_world_size = 1
@@ -324,7 +326,13 @@ local_iter_num = 0 # number of iterations in the lifetime of this process
 raw_model = model.module if ddp else model # unwrap DDP container if needed
 running_mfu = -1.0
 while True:
-
+    p_value = torch.where(Y[0]!=-1)[0].shape[0] - 2    
+    wandb.log({
+        "p_value": p_value, # record curriculum learning
+    }, step=iter_num)
+    # Write iter_num and p_value to a file
+    with open("./iter_num_p_value.txt", "a") as f:
+        f.write(f"{iter_num},{p_value}\n")
     # determine and set the learning rate for this iteration
     lr = get_lr(iter_num) if decay_lr else learning_rate
     for param_group in optimizer.param_groups:
@@ -332,7 +340,7 @@ while True:
 
     # evaluate the loss on train/val sets and write checkpoints
     if iter_num % eval_interval == 0 and master_process:
-        losses, p_value = estimate_loss()
+        losses, _ = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
         if wandb_log:
             wandb.log({
@@ -342,7 +350,8 @@ while True:
                 "lr": lr,
                 "mfu": running_mfu*100, # convert to percentage
                 "p_value": p_value, # record curriculum learning
-            })
+            },
+            step=iter_num)
         if losses['val'] < best_val_loss or always_save_checkpoint:
             best_val_loss = losses['val']
             if iter_num > 0:
@@ -375,6 +384,7 @@ while True:
         X, Y = get_batch('train')
         # backward pass, with gradient scaling if training in fp16
         scaler.scale(loss).backward()
+
     # clip the gradient
     if grad_clip != 0.0:
         scaler.unscale_(optimizer)

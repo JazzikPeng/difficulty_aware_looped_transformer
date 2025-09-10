@@ -18,8 +18,8 @@ TOKEN_MAP = {
     "e": 2,  # End of sequence
     "hop": 3,  # Start of hop outputs
 }
-NUM_SAMPLES = 40100
-NUM_TEST_SAMPLES = 2000
+NUM_SAMPLES = 400000
+NUM_TEST_SAMPLES = 1000
 
 RESERVED_TOKENS_SIZE = len(TOKEN_MAP)
 
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     # print(generate_k_hop_sequence(vocab_size=5, p=3, max_gap=4))
     # generate_mini_k_hop_sequences()
     # generate_full_k_hop_sequences()
-    if False:
+    if True:
         from constant import difficulty_to_l
         import time
         for (p, vocab_size, seq_len), num_loops in difficulty_to_l.items():

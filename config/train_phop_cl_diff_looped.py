@@ -5,19 +5,19 @@ init_from = 'scratch_loop' # 'scratch' or 'resume' or 'gpt2*' or 'scratch_loop'
 out_dir = 'out-phop-16-looped'
 model_output_name = 'ckpt_2_0_6_random.pt' # ckpt_<base_block_size>_<loop_start>_<num_loops>.pt
 eval_interval = 1000 # keep frequent because we'll overfit
-eval_iters = 200
+eval_iters = 20
 log_interval = 100 # don't print too too often
 
 # data
 train_file_paths = [
-    "data/phop/p_hop_sequences_16_256_4_4m.txt",
-    "data/phop/p_hop_sequences_32_512_8_4m.txt",
-    "data/phop/p_hop_sequences_64_1024_16_4m.txt",
-]
-test_file_paths = [
     "data/phop/p_hop_sequences_16_256_4.txt",
     "data/phop/p_hop_sequences_32_512_8.txt",
     "data/phop/p_hop_sequences_64_1024_16.txt",
+]
+test_file_paths = [
+    "data/phop/p_hop_sequences_16_256_4_test.txt",
+    "data/phop/p_hop_sequences_32_512_8_test.txt",
+    "data/phop/p_hop_sequences_64_1024_16_test.txt",
 ]
 
 # system
@@ -33,7 +33,7 @@ wandb_run_name = 'phop-cl-looped_2_0_cl' # <base_block_size>_<loop_start>_<num_l
 dataset = 'phop'
 gradient_accumulation_steps = 16
 batch_size = 16
-block_size = 1152 # context of up to 278 previous characters
+block_size = 1152 # context of up to 1152 previous characters
 
 # baby GPT model :)
 n_layer = 2
@@ -91,7 +91,7 @@ from data.phop.phop_generation import phop_collate_batch
 # Create a dataset and a dataloader for phop mixed difficulty learning
 train_dataset = LargeTextDataset(train_file_paths)
 test_dataset   = LargeTextDataset(test_file_paths)
-total_iters = max_iters
+total_iters = max_iters * gradient_accumulation_steps
 ratios = [1/3, 1/3, 1/3]  # N, M, K percentages
 train_sampler = FixedRatioBatchSampler(train_dataset, batch_size, total_iters, ratios)
 test_sampler = FixedRatioBatchSampler(test_dataset, batch_size, total_iters, ratios)

@@ -120,7 +120,7 @@ if __name__ == "__main__":
     
     dataset = LargeTextDataset(file_paths)
     batch_size = 16
-    total_iters = 3 * 100
+    total_iters = 6000
     ratios = [1/3, 1/3, 1/3]  # N, M, K percentages
 
     sampler = FixedRatioBatchSampler(dataset, batch_size, total_iters, ratios)
